@@ -1,14 +1,14 @@
+// models/catatan.js
 "use strict";
-const { Model, Sequelize } = require("sequelize");
+const { Model } = require("sequelize");
+
 module.exports = (sequelize, DataTypes) => {
   class catatan extends Model {
-    /**
-     * Helper method for defining associations.
-     * This method is not a part of Sequelize lifecycle.
-     * The `models/index` file will call this method automatically.
-     */
     static associate(models) {
-      // define association here
+      catatan.belongsTo(models.User, {
+        foreignKey: "user_id",
+        as: "user",
+      });
     }
   }
   catatan.init(
@@ -18,13 +18,12 @@ module.exports = (sequelize, DataTypes) => {
         defaultValue: DataTypes.UUIDV4,
         primaryKey: true,
       },
-
       name_catatan: {
         type: DataTypes.STRING,
         allowNull: false,
         validate: {
           notNull: {
-            msg: "Data Yang Di Kirim Tidak Boleh Kosong !",
+            msg: "Data Yang Di Kirim Tidak Boleh Kosong!",
           },
         },
       },
@@ -33,19 +32,18 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         validate: {
           notNull: {
-            msg: "Data  Yang Di Kirimkan Tidak Boleh Kosong !",
+            msg: "Data Yang Di Kirimkan Tidak Boleh Kosong!",
           },
         },
+      },
+      user_id: {
+        type: DataTypes.UUID,
+        allowNull: false,
       },
     },
     {
       sequelize,
       modelName: "catatan",
-      hooks: {
-        afterValidate: (catatan, options) => {
-          catatan.name_catatan = catatan.name_catatan.toLowerCase();
-        },
-      },
     }
   );
   return catatan;

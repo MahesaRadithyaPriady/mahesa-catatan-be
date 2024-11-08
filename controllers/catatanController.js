@@ -1,17 +1,12 @@
-const { catatan } = require("./../models/index");
+const { catatan, User } = require("./../models/index");
+
 exports.index = async (req, res) => {
   try {
     const allCatatan = await catatan.findAll({
-      attributes: ["id", "name_catatan", "isi_catatan"],
-      order: ["id"],
+      attributes: ["id", "name_catatan", "isi_catatan", "user_id"],
+      order: [["id", "ASC"]],
+      include: [{ model: User, as: "user", attributes: ["username"] }],
     });
-    if (allCatatan.length == 0) {
-      return res.status(200).json({
-        success: true,
-        message: "Berhasil Mendapatkan Data",
-        data: [],
-      });
-    }
     res.status(200).json({
       success: true,
       message: "Berhasil Mendapatkan Data",
@@ -19,6 +14,10 @@ exports.index = async (req, res) => {
     });
   } catch (err) {
     console.log(err);
+    res.status(500).json({
+      success: false,
+      message: "Terjadi kesalahan",
+    });
   }
 };
 
@@ -26,10 +25,15 @@ exports.singleData = async (req, res) => {
   try {
     const { id } = req.params;
     const singleData = await catatan.findOne({
-      where: {
-        id,
-      },
+      where: { id },
+      include: [{ model: User, as: "user", attributes: ["username"] }],
     });
+    if (!singleData) {
+      return res.status(404).json({
+        success: false,
+        message: "Catatan tidak ditemukan",
+      });
+    }
     res.status(200).json({
       success: true,
       message: "Berhasil Mendapatkan Data",
@@ -38,31 +42,28 @@ exports.singleData = async (req, res) => {
   } catch (error) {
     res.status(400).json({
       success: false,
-      message: error,
+      message: error.message,
     });
   }
 };
 
 exports.store = async (req, res) => {
   try {
-    const { name_catatan, isi_catatan } = req.body;
-    if (
-      !name_catatan ||
-      !isi_catatan ||
-      isi_catatan == undefined ||
-      name_catatan == undefined
-    ) {
-      res.status(400).json({
+    const { name_catatan, isi_catatan, user_id } = req.body;
+
+    if (!name_catatan || !isi_catatan) {
+      return res.status(400).json({
         success: false,
         message: "Data Yang Di Kirim Tidak Boleh Kosong !",
       });
-      return;
     }
+
     const newCatatan = await catatan.create({
       name_catatan,
       isi_catatan,
+      user_id, // Menggunakan user_id yang diterima dari request
     });
-    res.status(200).json({
+    res.status(201).json({
       success: true,
       message: "Berhasil Membuat Catatan",
       data: newCatatan,
@@ -71,7 +72,7 @@ exports.store = async (req, res) => {
     console.log(error);
     res.status(400).json({
       success: false,
-      message: error,
+      message: error.message,
     });
   }
 };
@@ -80,47 +81,35 @@ exports.update = async (req, res) => {
   try {
     const { id } = req.params;
     const { name_catatan, isi_catatan } = req.body;
-    if (!id) {
-      res.status(400).json({
+
+    if (!name_catatan || !isi_catatan) {
+      return res.status(400).json({
         success: false,
         message: "Data Yang Di Kirim Tidak Boleh Kosong !",
       });
-      return;
-    }
-    if (
-      !name_catatan ||
-      !isi_catatan ||
-      isi_catatan == undefined ||
-      name_catatan == undefined
-    ) {
-      res.status(400).json({
-        success: false,
-        message: "Data Yang Di Kirim Tidak Boleh Kosong !",
-      });
-      return;
     }
 
     const updateCatatan = await catatan.update(
-      {
-        name_catatan,
-        isi_catatan,
-      },
-      {
-        where: {
-          id,
-        },
-      }
+      { name_catatan, isi_catatan },
+      { where: { id } }
     );
+
+    if (!updateCatatan[0]) {
+      return res.status(404).json({
+        success: false,
+        message: "Catatan tidak ditemukan",
+      });
+    }
+
     res.status(200).json({
       success: true,
       message: "Berhasil Mengupdate Catatan",
-      status: 200,
-      request: new Date(),
     });
   } catch (error) {
     console.log(error);
     res.status(400).json({
-      message: error,
+      success: false,
+      message: error.message,
     });
   }
 };
@@ -128,22 +117,23 @@ exports.update = async (req, res) => {
 exports.delete = async (req, res) => {
   try {
     const { id } = req.params;
-    const deleteCatatan = await catatan.destroy({
-      where: {
-        id,
-      },
-    });
+    const deleteCatatan = await catatan.destroy({ where: { id } });
+
+    if (!deleteCatatan) {
+      return res.status(404).json({
+        success: false,
+        message: "Catatan tidak ditemukan",
+      });
+    }
+
     res.status(200).json({
       success: true,
       message: "Berhasil Menghapus Catatan",
-      status: 200,
-      request: new Date(),
     });
   } catch (error) {
     res.status(400).json({
       success: false,
-      message: error,
-      status: 400,
+      message: error.message,
     });
   }
 };

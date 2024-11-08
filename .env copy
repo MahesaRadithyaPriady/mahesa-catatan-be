@@ -1,0 +1,14 @@
+DB_HOST = mahesa-db-mahesaradithyapriady-6ebb.k.aivencloud.com
+DB_USER = avnadmin
+DB_PORT = 10531
+DB_PASS = AVNS_BA3M0QQm2WWH4yAxe75
+DB_NAME = db_catatan
+PORT = 3030
+
+
+DB_HOST = localhost
+DB_USER = mahesa
+DB_PORT = 3306
+DB_PASS = Mahesaradit1702@
+DB_NAME = db_catatan
+PORT = 3030

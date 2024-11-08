@@ -1,43 +1,53 @@
 const express = require("express");
 const catatanController = require("./../controllers/catatanController");
 const catatanMiddleware = require("./../middlewares/catatanMiddleware");
-const { Sequelize } = require("sequelize");
-const config = require("./../config/config");
+const authMiddleware = require("./../middlewares/authMiddleware");
 const Router = express.Router();
 
-Router.get("/catatan/", catatanController.index);
-Router.get("/catatan/:id", catatanController.singleData);
-Router.get("/db/test/", (req, res) => {
-  const sequelize = new Sequelize(
-    config.development.database,
-    config.development.username,
-    config.development.password,
-    {
-      host: config.development.host,
-      dialect: config.development.dialect,
-    }
-  );
-
-  sequelize
-    .authenticate()
-    .then(() => {
-      console.log("Connection has been established successfully.");
-    })
-    .catch((error) => {
-      console.error("Unable to connect to the database:", error);
+Router.get("/catatan/", authMiddleware.jwtVerify, catatanController.index);
+Router.get(
+  "/catatan/:id",
+  authMiddleware.jwtVerify,
+  catatanController.singleData
+);
+Router.get("/db/status", (req, res) => {
+  const status = 200;
+  if (status === 200) {
+    return res.status(200).json({
+      status: 200,
+      success: true,
+      message: "Server Online",
+      data: {
+        version: "1.5.0",
+      },
     });
-
-  res.send("Hello World");
+  }
+  res.status(400).json({
+    status: 400,
+    success: false,
+    message: "Server Offline",
+    data: {
+      version: "1.5.0",
+    },
+  });
 });
+
 Router.post(
   "/catatan/",
   catatanMiddleware.validateNameCatatan,
+  authMiddleware.jwtVerify,
   catatanController.store
 );
-Router.put("/catatan/:id", catatanMiddleware.cekId, catatanController.update);
+Router.put(
+  "/catatan/:id",
+  catatanMiddleware.cekId,
+  authMiddleware.jwtVerify,
+  catatanController.update
+);
 Router.delete(
   "/catatan/:id",
   catatanMiddleware.cekId,
+  authMiddleware.jwtVerify,
   catatanController.delete
 );
 module.exports = Router;

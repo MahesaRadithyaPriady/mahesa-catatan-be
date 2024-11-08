@@ -4,7 +4,7 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "start": "node app",
+    "start": "nodemon app",
     "build": "npm install && npm run start"
   },
   "repository": {
@@ -19,9 +19,11 @@
   },
   "homepage": "https://github.com/MahesaRadithyaPriady/mahesa-catatan-be#readme",
   "dependencies": {
+    "bcrypt": "^5.1.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
+    "jsonwebtoken": "^9.0.2",
     "mysql2": "^3.11.3",
     "nodemon": "^3.1.7",
     "pg": "^8.13.1",
